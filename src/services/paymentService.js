@@ -7,11 +7,9 @@
  *   2. verifyTransaction — the ONLY source of truth for "did this payment
  *      succeed". Never trust a client-supplied "success" flag or amount.
  *
- * Requires PAYSTACK_SECRET_KEY in .env. Amount is passed in the merchant's
- * base currency unit (GHS here — this merchant account is Ghana-only, see
- * fxService.js for the USD->GHS conversion done before this is called) and
- * converted to the smallest unit (pesewas) here, since that's what
- * Paystack's API expects — callers never do that math.
+ * Requires PAYSTACK_SECRET_KEY in .env. Amount is passed in Naira (or your
+ * currency's base unit) and converted to the smallest unit (kobo) here,
+ * since that's what Paystack's API expects — callers never do that math.
  */
 
 const fetch = require('node-fetch');
@@ -31,11 +29,11 @@ function requireKey() {
 /**
  * @param {object} params
  * @param {string} params.email - customer email (Paystack requires this)
- * @param {number} params.amount - amount in the currency's base unit, e.g. 1500.50 GHS
- * @param {string} [params.currency] - defaults to GHS (this merchant account's supported currency)
+ * @param {number} params.amount - amount in the currency's base unit, e.g. 1500.50 Naira
+ * @param {string} [params.currency] - defaults to NGN
  * @param {object} [params.metadata] - anything you want echoed back on verify (e.g. offerId, quantity)
  */
-async function initializeTransaction({ email, amount, currency = 'GHS', metadata = {} }) {
+async function initializeTransaction({ email, amount, currency = 'NGN', metadata = {} }) {
   const key = requireKey();
 
   if (!email) throw new Error('email is required to initialize a Paystack transaction');
@@ -49,7 +47,7 @@ async function initializeTransaction({ email, amount, currency = 'GHS', metadata
     },
     body: JSON.stringify({
       email,
-      amount: Math.round(amount * 100), // GHS -> pesewas
+      amount: Math.round(amount * 100), // Naira -> kobo
       currency,
       metadata,
     }),
@@ -84,11 +82,11 @@ async function verifyTransaction(reference) {
     throw new Error(`Paystack verify failed: ${data.message || res.statusText}`);
   }
 
-  const tx = data.data; // { status, amount (pesewas), currency, reference, customer, metadata, ... }
+  const tx = data.data; // { status, amount (kobo), currency, reference, customer, metadata, ... }
   return {
     success: tx.status === 'success',
     status: tx.status,
-    amount: tx.amount / 100, // back to base unit (GHS)
+    amount: tx.amount / 100, // back to base unit
     currency: tx.currency,
     reference: tx.reference,
     paidAt: tx.paid_at,
