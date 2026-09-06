@@ -20,7 +20,7 @@
 const fetch = require('node-fetch');
 
 const PAYSTACK_BASE = 'https://api.paystack.co';
-const DEFAULT_CURRENCY = 'USD';
+const DEFAULT_CURRENCY = 'GHS';
 
 function requireKey() {
   const key = process.env.PAYSTACK_SECRET_KEY;
@@ -53,7 +53,7 @@ async function initializeTransaction({ email, amount, currency = DEFAULT_CURRENC
     },
     body: JSON.stringify({
       email,
-      amount: Math.round(amount * 100), // USD -> cents
+      amount: Math.round(amount * 100), // GHS -> cents
       currency,
       metadata,
     }),

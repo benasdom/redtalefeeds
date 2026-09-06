@@ -10,7 +10,7 @@ const router = express.Router();
 // what gets stored on the order. (fxService.js / GHS conversion has been
 // removed — this backend never had a real need for it since Paystack was
 // only ever being charged in the app's own currency.)
-const CURRENCY = 'USD';
+const CURRENCY = 'GHS';
 
 const TRACKING_WINDOW_DAYS = 7;
 
